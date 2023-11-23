@@ -17,9 +17,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(logger);
 
 // views route
-app.use('/', (req, res) => {
-  res.sendFile(__dirname + '/views/index.html');
-});
+// app.use('/', (req, res) => {
+//   res.sendFile(__dirname + '/views/index.html');
+// });
 
 // socket.io
 io.on('connection', (socket) => {

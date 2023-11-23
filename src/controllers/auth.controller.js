@@ -3,6 +3,8 @@ const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 const ResponseTemplate = require('../helper/response.helper');
 const hashPassword = require('../utils/hashPassword');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 async function Register(req, res) {
   const { name, email, password, phoneNumber, role } = req.body;
@@ -85,16 +87,15 @@ async function Login(req, res) {
         );
     }
 
+    const token = jwt.sign(
+      { email: existingUser.email, phoneNumber: existingUser.phoneNumber },
+      JWT_SECRET_KEY,
+      { expiresIn: '1h' }
+    );
+
     return res
       .status(200)
-      .json(
-        ResponseTemplate(
-          { email: existingUser.email },
-          'login succcess',
-          null,
-          200
-        )
-      );
+      .json(ResponseTemplate({ token: token }, 'login succcess', null, 200));
   } catch (error) {
     return res
       .status(500)
