@@ -39,9 +39,7 @@ async function Register(req, res) {
         .json(ResponseTemplate(null, 'failed to register new user', null, 400));
     }
 
-    return res
-      .status(201)
-      .json(ResponseTemplate(newUser, 'created', null, 201));
+    return res.status(201).json(ResponseTemplate(null, 'created', null, 201));
   } catch (error) {
     return res
       .status(500)
@@ -90,7 +88,7 @@ async function Login(req, res) {
     const token = jwt.sign(
       { email: existingUser.email, phoneNumber: existingUser.phoneNumber },
       JWT_SECRET_KEY,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
     return res
