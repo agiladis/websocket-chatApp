@@ -16,7 +16,7 @@ model User {
   email        String    @unique
   password     String
   phoneNumber  String    @unique
-  Dob          DateTime  @db.Date
+  dob          DateTime  @db.Date
   profilePhoto String?
   isVerified   Boolean   @default(false)
   role         Role      @default(USER)
