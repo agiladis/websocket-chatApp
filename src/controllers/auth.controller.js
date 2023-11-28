@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
+const Sentry = require('@sentry/node');
 const ResponseTemplate = require('../helper/response.helper');
 const hashPassword = require('../utils/hashPassword');
 const jwt = require('jsonwebtoken');
@@ -39,10 +40,9 @@ async function Register(req, res) {
         .json(ResponseTemplate(null, 'failed to register new user', null, 400));
     }
 
-    return res
-      .status(201)
-      .json(ResponseTemplate(newUser, 'created', null, 201));
+    return res.status(201).json(ResponseTemplate(null, 'created', null, 201));
   } catch (error) {
+    Sentry.captureException(error);
     return res
       .status(500)
       .json(ResponseTemplate(null, 'internal server error', error, 500));
@@ -90,13 +90,14 @@ async function Login(req, res) {
     const token = jwt.sign(
       { email: existingUser.email, phoneNumber: existingUser.phoneNumber },
       JWT_SECRET_KEY,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
     return res
       .status(200)
       .json(ResponseTemplate({ token: token }, 'login succcess', null, 200));
   } catch (error) {
+    Sentry.captureException(error);
     return res
       .status(500)
       .json(ResponseTemplate(null, 'internal server error', error, 500));
