@@ -9,15 +9,14 @@ const socketHandler = require('./controllers/socket.controller');
 
 const app = express();
 const server = require('http').Server(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+  connectionStateRecovery: true, // Mengaktifkan fitur pemulihan koneksi
+});
 
 const PORT = process.env.PORT;
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
 socketHandler(io);
-// const io = require('socket.io')(http, {
-//   connectionStateRecovery: {},
-// });
 
 // to know how body request type
 app.use(express.json());
