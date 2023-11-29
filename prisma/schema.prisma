@@ -20,6 +20,7 @@ model User {
   profilePhoto String?
   isVerified   Boolean   @default(false)
   role         Role      @default(USER)
+  resetToken   String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @default(now())
   deletedAt    DateTime?
