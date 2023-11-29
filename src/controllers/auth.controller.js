@@ -8,19 +8,38 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 async function Register(req, res) {
-  const { name, email, password, phoneNumber, role } = req.body;
+  const { name, email, password, phoneNumber, dob, role } = req.body;
 
   try {
-    const existingUser = await prisma.user.findUnique({
+    const userExist = await prisma.user.findUnique({
       where: {
         email: email,
       },
     });
 
-    if (existingUser) {
+    if (userExist) {
       return res
         .status(400)
         .json(ResponseTemplate(null, 'bad request', 'email already used', 400));
+    }
+
+    const phoneNumberExist = await prisma.user.findUnique({
+      where: {
+        phoneNumber: phoneNumber,
+      },
+    });
+
+    if (phoneNumberExist) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(
+            null,
+            'bad request',
+            'phone number already used',
+            400
+          )
+        );
     }
 
     const hashedPassword = await hashPassword(password);
@@ -30,6 +49,7 @@ async function Register(req, res) {
         email: email,
         password: hashedPassword,
         phoneNumber: phoneNumber,
+        dob: new Date(dob),
         role: role,
       },
     });
