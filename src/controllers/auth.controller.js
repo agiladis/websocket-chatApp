@@ -6,9 +6,11 @@ const jwt = require('jsonwebtoken');
 
 const ResponseTemplate = require('../helper/response.helper');
 const hashPassword = require('../utils/hashPassword');
-const { userActivation } = require('../lib/mailer');
+const hashResetToken = require('../utils/hashResetToken');
+const { userActivation, passwordResetEmail } = require('../lib/mailer');
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+const JWT_RESET_SECRET_KEY = process.env.JWT_RESET_SECRET_KEY;
 
 async function Register(req, res) {
   const { name, email, password, phoneNumber, dob, role } = req.body;
@@ -133,4 +135,69 @@ async function Login(req, res) {
   }
 }
 
-module.exports = { Register, Login };
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+
+  try {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    if (!existingUser) {
+      return res
+        .status(404)
+        .json(ResponseTemplate(null, 'bad request', 'email not found', 404));
+    }
+
+    const resetToken = jwt.sign(
+      {
+        id: existingUser.id,
+        email: existingUser.email,
+      },
+      JWT_RESET_SECRET_KEY,
+      { expiresIn: '10m' }
+    );
+
+    const hashedResetToken = await hashResetToken(resetToken);
+
+    const addResetToken = await prisma.user.update({
+      where: { email },
+      data: { resetToken: hashedResetToken },
+    });
+
+    if (!addResetToken) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(null, 'bad request', 'forgot password failed', 400)
+        );
+    }
+
+    const resetPasswordLink = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/reset-password/${resetToken}`;
+    const error = await passwordResetEmail(email, resetPasswordLink);
+
+    if (error) {
+      return res
+        .status(400)
+        .json(ResponseTemplate(null, 'bad request', error, 400));
+    }
+
+    return res
+      .status(200)
+      .json(
+        ResponseTemplate(
+          { token: resetToken },
+          'password reset request was successful',
+          null,
+          200
+        )
+      );
+  } catch (error) {
+    Sentry.captureException(error);
+    return res
+      .status(500)
+      .json(ResponseTemplate(null, 'internal server error', error, 500));
+  }
+}
+
+module.exports = { Register, Login, forgotPassword };

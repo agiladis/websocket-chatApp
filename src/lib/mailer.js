@@ -3,6 +3,7 @@ const { SERVICE, SERVER_SMTP, EMAIL_SMTP, PASS_SMTP } = process.env;
 const {
   activationTemplate,
   activatedTemplate,
+  resetPasswordTemplate,
 } = require('../templates/mail.template.html');
 
 const transporter = nodemailer.createTransport({
@@ -52,4 +53,22 @@ async function activatedMailer(email) {
   }
 }
 
-module.exports = { userActivation, activatedMailer };
+async function passwordResetEmail(email, resetPasswordLink) {
+  const mailOptions = {
+    from: EMAIL_SMTP,
+    to: email,
+    subject: 'Password reset request',
+    html: resetPasswordTemplate(resetPasswordLink),
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('response : ' + info.response);
+    return null;
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
+}
+
+module.exports = { userActivation, activatedMailer, passwordResetEmail };

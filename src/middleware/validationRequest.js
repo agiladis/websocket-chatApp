@@ -47,4 +47,28 @@ function ValidateGetUserRequest(req, res, next) {
   next();
 }
 
-module.exports = { ValidateCreateUserRequest, ValidateGetUserRequest };
+function validateForgotPasswordRequest(req, res, next) {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+  });
+
+  const { error } = schema.validate(req.body);
+
+  if (error) {
+    let respErr = ResponseTemplate(
+      null,
+      'invalid request body',
+      error.details[0].message,
+      400
+    );
+    return res.status(400).json(respErr);
+  }
+
+  next();
+}
+
+module.exports = {
+  ValidateCreateUserRequest,
+  ValidateGetUserRequest,
+  validateForgotPasswordRequest,
+};
