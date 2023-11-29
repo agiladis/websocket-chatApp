@@ -2,9 +2,12 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 const Sentry = require('@sentry/node');
+const jwt = require('jsonwebtoken');
+
 const ResponseTemplate = require('../helper/response.helper');
 const hashPassword = require('../utils/hashPassword');
-const jwt = require('jsonwebtoken');
+const { userActivation } = require('../lib/mailer');
+
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 async function Register(req, res) {
@@ -59,6 +62,12 @@ async function Register(req, res) {
         .status(400)
         .json(ResponseTemplate(null, 'failed to register new user', null, 400));
     }
+
+    const activationLink = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/activation/${newUser.id}`;
+
+    await userActivation(newUser.email, activationLink);
 
     return res.status(201).json(ResponseTemplate(null, 'created', null, 201));
   } catch (error) {
