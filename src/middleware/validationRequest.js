@@ -7,6 +7,7 @@ function ValidateCreateUserRequest(req, res, next) {
     email: Joi.string().email().required(),
     password: Joi.string().required(),
     phoneNumber: Joi.number().required(),
+    dob: Joi.date().iso().required(),
     role: Joi.string(),
   });
 

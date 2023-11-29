@@ -3,21 +3,19 @@ const express = require('express');
 const logger = require('./middleware/logger');
 const socketIO = require('socket.io');
 const Sentry = require('@sentry/node');
-const authRouter = require('./routes/auth.route');
-const chatRouter = require('./routes/chat.route');
+const router = require('./routes/v1/route');
 const socketHandler = require('./controllers/socket.controller');
 
 const app = express();
 const server = require('http').Server(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+  connectionStateRecovery: true, // Mengaktifkan fitur pemulihan koneksi
+});
 
 const PORT = process.env.PORT;
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
 socketHandler(io);
-// const io = require('socket.io')(http, {
-//   connectionStateRecovery: {},
-// });
 
 // to know how body request type
 app.use(express.json());
@@ -39,8 +37,7 @@ app.use((req, res, next) => {
 });
 
 // API routes
-app.use('/api/auth', authRouter);
-app.use('/api/chats', chatRouter);
+app.use('/api', router);
 
 // views route
 // app.use('/', (req, res) => {
