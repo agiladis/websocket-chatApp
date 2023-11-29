@@ -1,6 +1,9 @@
 const nodemailer = require('nodemailer');
 const { SERVICE, SERVER_SMTP, EMAIL_SMTP, PASS_SMTP } = process.env;
-const { activationTemplate } = require('../templates/mail.template.html');
+const {
+  activationTemplate,
+  activatedTemplate,
+} = require('../templates/mail.template.html');
 
 const transporter = nodemailer.createTransport({
   host: SERVER_SMTP,
@@ -17,7 +20,7 @@ async function userActivation(email, activationLink) {
   const mailOptions = {
     from: EMAIL_SMTP,
     to: email,
-    subject: 'Activate you chatApp account',
+    subject: 'Activate your chatApp account',
     html: activationTemplate(activationLink),
   };
 
@@ -31,4 +34,22 @@ async function userActivation(email, activationLink) {
   }
 }
 
-module.exports = { userActivation };
+async function activatedMailer(email) {
+  const mailOptions = {
+    from: EMAIL_SMTP,
+    to: email,
+    subject: 'Congratulations 🔥 Your account has been successfully activated!',
+    html: activatedTemplate(),
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('response : ' + info.response);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+module.exports = { userActivation, activatedMailer };
