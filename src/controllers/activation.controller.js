@@ -23,6 +23,19 @@ async function activateAccount(req, res) {
         );
     }
 
+    if (user.isVerified) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(
+            null,
+            'bad request',
+            'your account has been previously activated',
+            400
+          )
+        );
+    }
+
     const updatedUser = await prisma.user.update({
       where: {
         id: id,
