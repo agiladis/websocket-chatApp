@@ -3,8 +3,7 @@ const express = require('express');
 const logger = require('./middleware/logger');
 const socketIO = require('socket.io');
 const Sentry = require('@sentry/node');
-const authRouter = require('./routes/auth.route');
-const chatRouter = require('./routes/chat.route');
+const router = require('./routes/v1/route');
 const socketHandler = require('./controllers/socket.controller');
 
 const app = express();
@@ -38,8 +37,7 @@ app.use((req, res, next) => {
 });
 
 // API routes
-app.use('/api/auth', authRouter);
-app.use('/api/chats', chatRouter);
+app.use('/api', router);
 
 // views route
 // app.use('/', (req, res) => {
