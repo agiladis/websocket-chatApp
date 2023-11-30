@@ -147,20 +147,28 @@ async function forgotPassword(req, res) {
         .json(ResponseTemplate(null, 'bad request', 'email not found', 404));
     }
 
-    if (
-      existingUser.resetToken != null &&
-      existingUser.resetToken > new Date()
-    ) {
-      return res
-        .status(400)
-        .json(
-          ResponseTemplate(
-            null,
-            'bad request',
-            'A password reset request is already pending for your account. Please check your email',
-            400
-          )
-        );
+    // if token exist and not expired yet
+    if (existingUser.resetToken != null) {
+      const lastUpdated = new Date(existingUser.updatedAt);
+      const currentTime = new Date();
+      const expirationTime = 10 * 60 * 1000; // 10 menit dalam milidetik
+
+      console.log(lastUpdated);
+      console.log(currentTime);
+      console.log(currentTime - lastUpdated);
+
+      if (currentTime - lastUpdated <  expirationTime) {
+        return res
+          .status(400)
+          .json(
+            ResponseTemplate(
+              null,
+              'bad request',
+              'A password reset request is already pending for your account. Please check your email',
+              400
+            )
+          );
+      }
     }
 
     const resetToken = jwt.sign(
@@ -176,7 +184,7 @@ async function forgotPassword(req, res) {
 
     const addResetToken = await prisma.user.update({
       where: { email },
-      data: { resetToken: hashedResetToken },
+      data: { resetToken: hashedResetToken, updatedAt: new Date() },
     });
 
     if (!addResetToken) {
