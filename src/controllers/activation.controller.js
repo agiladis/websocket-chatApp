@@ -23,6 +23,19 @@ async function activateAccount(req, res) {
         );
     }
 
+    if (user.isVerified) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(
+            null,
+            'bad request',
+            'your account has been previously activated',
+            400
+          )
+        );
+    }
+
     const updatedUser = await prisma.user.update({
       where: {
         id: id,
@@ -38,7 +51,13 @@ async function activateAccount(req, res) {
         .json(ResponseTemplate(null, 'bad request', 'activation failed', 400));
     }
 
-    await activatedMailer(updatedUser.email);
+    const isErr = await activatedMailer(updatedUser.email);
+
+    if (isErr) {
+      return res
+        .status(400)
+        .json(ResponseTemplate(null, 'bad request', isErr, 400));
+    }
 
     return res.status(200).json(ResponseTemplate(null, 'success', null, 200));
   } catch (error) {
