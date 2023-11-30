@@ -69,7 +69,13 @@ async function Register(req, res) {
       'host'
     )}/api/v1/activation/${newUser.id}`;
 
-    await userActivation(newUser.email, activationLink);
+    const isErr = await userActivation(newUser.email, activationLink);
+
+    if (isErr) {
+      return res
+        .status(400)
+        .json(ResponseTemplate(null, 'bad request', isErr, 400));
+    }
 
     return res.status(201).json(ResponseTemplate(null, 'created', null, 201));
   } catch (error) {
