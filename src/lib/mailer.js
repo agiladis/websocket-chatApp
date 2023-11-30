@@ -3,6 +3,7 @@ const { SERVICE, SERVER_SMTP, EMAIL_SMTP, PASS_SMTP } = process.env;
 const {
   activationTemplate,
   activatedTemplate,
+  resetPasswordTemplate,
 } = require('../templates/mail.template.html');
 
 const transporter = nodemailer.createTransport({
@@ -18,7 +19,7 @@ const transporter = nodemailer.createTransport({
 
 async function userActivation(email, activationLink) {
   const mailOptions = {
-    from: EMAIL_SMTP,
+    from: `ChatApp <${EMAIL_SMTP}>`,
     to: email,
     subject: 'Activate your chatApp account',
     html: activationTemplate(activationLink),
@@ -26,17 +27,20 @@ async function userActivation(email, activationLink) {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log('response : ' + info.response);
-    return true;
+
+    if (!info.accepted) {
+      return 'failed to send account activation mail';
+    }
+
+    return null;
   } catch (error) {
-    console.error(error);
-    return false;
+    return error.message;
   }
 }
 
 async function activatedMailer(email) {
   const mailOptions = {
-    from: EMAIL_SMTP,
+    from: `ChatApp <${EMAIL_SMTP}>`,
     to: email,
     subject: 'Congratulations 🔥 Your account has been successfully activated!',
     html: activatedTemplate(),
@@ -44,12 +48,36 @@ async function activatedMailer(email) {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log('response : ' + info.response);
-    return true;
+
+    if (!info.accepted) {
+      return 'failed to send account activation mail';
+    }
+
+    return null;
   } catch (error) {
-    console.error(error);
-    return false;
+    return error.message;
   }
 }
 
-module.exports = { userActivation, activatedMailer };
+async function passwordResetEmail(email, resetPasswordLink) {
+  const mailOptions = {
+    from: `ChatApp <${EMAIL_SMTP}>`,
+    to: email,
+    subject: 'Password reset request',
+    html: resetPasswordTemplate(resetPasswordLink),
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+
+    if (!info.accepted) {
+      return 'failed to send reset password mail';
+    }
+
+    return null;
+  } catch (error) {
+    return error.message;
+  }
+}
+
+module.exports = { userActivation, activatedMailer, passwordResetEmail };
