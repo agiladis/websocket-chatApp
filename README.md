@@ -78,7 +78,6 @@ This project is available on Railway, use this base URl on your postman :
 
 - [Agil Adi Saputro - GitHub](https://github.com/agiladis/)
 - [Agil Adi Saputro - LinkedIn](https://www.linkedin.com/in/agiladisaputro/)
-- ![alt text](https://avatars0.githubusercontent.com/u/29962968?s=400&u=7753a408ed02e51f88a13a5d11014484bc4d80ee&v=4)
 
 ## License
 
