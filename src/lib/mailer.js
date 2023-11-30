@@ -45,11 +45,14 @@ async function activatedMailer(email) {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log('response : ' + info.response);
-    return true;
+
+    if (!info.accepted) {
+      return 'failed to send account activation mail';
+    }
+
+    return null;
   } catch (error) {
-    console.error(error);
-    return false;
+    return error.message;
   }
 }
 
