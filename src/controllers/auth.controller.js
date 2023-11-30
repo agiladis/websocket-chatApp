@@ -153,11 +153,7 @@ async function forgotPassword(req, res) {
       const currentTime = new Date();
       const expirationTime = 10 * 60 * 1000; // 10 menit dalam milidetik
 
-      console.log(lastUpdated);
-      console.log(currentTime);
-      console.log(currentTime - lastUpdated);
-
-      if (currentTime - lastUpdated <  expirationTime) {
+      if (currentTime - lastUpdated < expirationTime) {
         return res
           .status(400)
           .json(
@@ -230,4 +226,85 @@ async function forgotPassword(req, res) {
   }
 }
 
-module.exports = { Register, Login, forgotPassword };
+async function resetPassword(req, res) {
+  const { email, password } = req.body;
+  const { resetToken } = req.params;
+
+  try {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    if (!existingUser) {
+      return res
+        .status(404)
+        .json(ResponseTemplate(null, 'bad request', 'email not found', 404));
+    }
+
+    const validResetToken = await bcrypt.compare(
+      resetToken,
+      existingUser.resetToken
+    );
+
+    if (!validResetToken) {
+      return res
+        .status(401)
+        .json(
+          ResponseTemplate(
+            null,
+            'bad request',
+            'invalid reset password token',
+            401
+          )
+        );
+    }
+
+    const isSamePassword = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
+
+    if (isSamePassword) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(null, 'bad request', 'use a different password', 400)
+        );
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const updatedPassword = await prisma.user.update({
+      where: { email: email },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        updatedAt: new Date(),
+      },
+    });
+
+    if (!updatedPassword) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(null, 'bad request', 'reset password failed', 400)
+        );
+    }
+
+    return res
+      .status(200)
+      .json(
+        ResponseTemplate(
+          null,
+          'success',
+          'the password was changed successfully',
+          200
+        )
+      );
+  } catch (error) {
+    Sentry.captureException(error);
+    return res
+      .status(500)
+      .json(ResponseTemplate(null, 'internal server error', error, 500));
+  }
+}
+
+module.exports = { Register, Login, forgotPassword, resetPassword };
