@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 
 async function userActivation(email, activationLink) {
   const mailOptions = {
-    from: EMAIL_SMTP,
+    from: `ChatApp <${EMAIL_SMTP}>`,
     to: email,
     subject: 'Activate your chatApp account',
     html: activationTemplate(activationLink),
@@ -37,7 +37,7 @@ async function userActivation(email, activationLink) {
 
 async function activatedMailer(email) {
   const mailOptions = {
-    from: EMAIL_SMTP,
+    from: `ChatApp <${EMAIL_SMTP}>`,
     to: email,
     subject: 'Congratulations 🔥 Your account has been successfully activated!',
     html: activatedTemplate(),
