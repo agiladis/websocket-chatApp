@@ -55,7 +55,7 @@ async function activatedMailer(email) {
 
 async function passwordResetEmail(email, resetPasswordLink) {
   const mailOptions = {
-    from: EMAIL_SMTP,
+    from: `ChatApp <${EMAIL_SMTP}>`,
     to: email,
     subject: 'Password reset request',
     html: resetPasswordTemplate(resetPasswordLink),
@@ -63,11 +63,14 @@ async function passwordResetEmail(email, resetPasswordLink) {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log('response : ' + info.response);
+
+    if (!info.accepted) {
+      return 'failed to send reset password mail';
+    }
+
     return null;
   } catch (error) {
-    console.error(error);
-    return error;
+    return error.message;
   }
 }
 

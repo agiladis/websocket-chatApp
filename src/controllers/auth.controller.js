@@ -147,10 +147,26 @@ async function forgotPassword(req, res) {
         .json(ResponseTemplate(null, 'bad request', 'email not found', 404));
     }
 
+    if (
+      existingUser.resetToken != null &&
+      existingUser.resetToken > new Date()
+    ) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(
+            null,
+            'bad request',
+            'A password reset request is already pending for your account. Please check your email',
+            400
+          )
+        );
+    }
+
     const resetToken = jwt.sign(
       {
         id: existingUser.id,
-        email: existingUser.email,
+        email: email,
       },
       JWT_RESET_SECRET_KEY,
       { expiresIn: '10m' }
@@ -167,19 +183,25 @@ async function forgotPassword(req, res) {
       return res
         .status(400)
         .json(
-          ResponseTemplate(null, 'bad request', 'forgot password failed', 400)
+          ResponseTemplate(
+            null,
+            'bad request',
+            'reset password request failed',
+            400
+          )
         );
     }
 
     const resetPasswordLink = `${req.protocol}://${req.get(
       'host'
     )}/api/v1/reset-password/${resetToken}`;
-    const error = await passwordResetEmail(email, resetPasswordLink);
 
-    if (error) {
+    const isErr = await passwordResetEmail(email, resetPasswordLink);
+
+    if (isErr) {
       return res
         .status(400)
-        .json(ResponseTemplate(null, 'bad request', error, 400));
+        .json(ResponseTemplate(null, 'bad request', isErr, 400));
     }
 
     return res
