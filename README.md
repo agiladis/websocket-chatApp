@@ -21,6 +21,16 @@ ChatApp is an open source platform that enable users send message to other user 
 - You can either work with cloud database or use your locally installed `PostgreSQL`. Do configure to your choice in the application entry file.
 - Create an .env file in your project root folder and add your variables. See [.env.example](https://github.com/agiladis/websocket-chatApp/blob/main/.env.example) for assistance.
 
+## Railway Project
+
+This project is available on Railway, use this base URl on your postman :
+
+[LINK](https://websocket-chatapp-production-26f7.up.railway.app/)
+
+**OR**
+
+[![USE](https://railway.app/button.svg)](https://websocket-chatapp-production-26f7.up.railway.app/)
+
 ## Usage
 
 - Run `npm start` to start the application.
