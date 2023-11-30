@@ -109,6 +109,32 @@ async function Login(req, res) {
         );
     }
 
+    if (!existingUser.isVerified) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(
+            null,
+            'bad request',
+            'your account has not been verified. please check your email and complete the verification process before logging in.',
+            400
+          )
+        );
+    }
+
+    if (existingUser.resetToken) {
+      return res
+        .status(400)
+        .json(
+          ResponseTemplate(
+            null,
+            'bad request',
+            'You have requested a password reset. Please check your email for instructions before logging in',
+            400
+          )
+        );
+    }
+
     const validPassword = await bcrypt.compare(password, existingUser.password);
 
     if (!validPassword) {
